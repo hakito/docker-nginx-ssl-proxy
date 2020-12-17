@@ -14,8 +14,8 @@ if [ "$DO_AUTH" == "required" ]; then
         echo Proxy Password: $PROXY_PASSWORD
         echo Proxy Password: $PROXY_PASSWORD > /tmp/proxy_password
     fi
-    echo -n "admin:" > /tmp/htpasswd
-    echo $PROXY_PASSWORD | openssl passwd -apr1 -stdin >> /tmp/htpasswd
+    HTDIGEST=`echo -n "admin:dummy:${PROXY_PASSWORD}" | md5sum`
+    echo -n "admin:dummy:${HTDIGEST}" > /tmp/passwd.digest
 
     IPR_EXPANDED=""
     for ip in $WHITELIST_IPS; do

@@ -1,12 +1,16 @@
-# SSL Front-End Proxy With Automatic Free Certificate Management
+# SSL Front-End Proxy With Automatic Free Certificate Management And Digest Authentication
+
+This image is base on [danieldent/nginx-ssl-proxy](https://hub.docker.com/r/danieldent/nginx-ssl-proxy) but provides
+digest authtentication instead of basic authentication.
 
 Zero configuration required - set up SSL in 30 seconds. Out of the box A rating at SSL labs. HTTP/2 enabled for increased performance.
 
 This image contains nginx along with some glue code to automatically obtain and renew a free DV SSL certificate from [Let's Encrypt](https://letsencrypt.org/).
 
 It is configured by setting two environment variables:
-   * `UPSTREAM` - The IP address or hostname (and optional port) of the upstream server to proxy requests towards.
-   * `SERVERNAME` - The hostname to listen to. The system will automatically obtain an SSL certificate for this hostname.
+
+* `UPSTREAM` - The IP address or hostname (and optional port) of the upstream server to proxy requests towards.
+* `SERVERNAME` - The hostname to listen to. The system will automatically obtain an SSL certificate for this hostname.
 
 An optional `EXTRANAMES` variable can be provided with a list of additional domains to request as subject-alternative-names for the certificate.
 
@@ -39,19 +43,19 @@ Create a docker-compose.yml file as follows:
 
 Then simply `docker-compose up`.
 
-## Optional: Enable Simple Authentication
+## Optional: Enable Digest Authentication
 
-If the `DO_AUTH` environment variable is set to `required`, the proxy implements a simple authentication system.
+If the `DO_AUTH` environment variable is set to `required`, the proxy implements a digest authentication system.
 
 A user meeting any of these three criteria will be allowed access to the proxied service:
 
-   * Users coming from an IP or CIDR range listed in the space-separated `WHITELIST_IPS` variable.
-   * Users presenting a cookie named `magic_ssl_proxy_auth` set to the value of the `COOKIE_VALUE` variable.
-   * Users providing HTTP Basic Authentication credentials, username `admin` with a password matching the `PROXY_PASSWORD` variable.
-   
-A user that correctly authenticates with HTTP Basic Authentication will have their `magic_ssl_proxy_auth` cookie set so that they are not required to re-authenticate. 
-   
-By default, no IPs are whitelisted. When authentication is enabled, the `COOKIE_VALUE` and `PROXY_PASSWORD` values will be chosen randomly if they are not provided. If randomly chosen, the randomly chosen values will be output to the console during container startup. The `PROXY_PASSWORD` value will also be available in the `/tmp/proxy_password` file within the container, while the chosen `COOKIE_VALUE` will be available in the `/etc/nginx/auth_part1.conf` file. 
+* Users coming from an IP or CIDR range listed in the space-separated `WHITELIST_IPS` variable.
+* Users presenting a cookie named `magic_ssl_proxy_auth` set to the value of the `COOKIE_VALUE` variable.
+* Users providing HTTP Digest Authentication credentials, username `admin` with a password matching the `PROXY_PASSWORD` variable.
+
+A user that correctly authenticates with HTTP Digest Authentication will have their `magic_ssl_proxy_auth` cookie set so that they are not required to re-authenticate.
+
+By default, no IPs are whitelisted. When authentication is enabled, the `COOKIE_VALUE` and `PROXY_PASSWORD` values will be chosen randomly if they are not provided. If randomly chosen, the randomly chosen values will be output to the console during container startup. The `PROXY_PASSWORD` value will also be available in the `/tmp/proxy_password` file within the container, while the chosen `COOKIE_VALUE` will be available in the `/etc/nginx/auth_part1.conf` file.
 
 Nginx limits the length of your `COOKIE_VALUE` for performance reasons. If your `COOKIE_VALUE` is too long, nginx will refuse to start and will display errors relating to `server_names_hash_bucket_size` and `server_names_hash_max_size`. If you have difficulties, try decreasing the legnth of your cookie or add directives to your Nginx configuration to increase the maximum size.
 
@@ -63,13 +67,13 @@ Set the `REAL_IP_RECURSIVE` environment variable to `on` to cause Nginx to parse
 
 The list of IPs or CIDR ranges from which Nginx will trust the `X-Forwarded-For` variable can be specified in the `SET_REAL_IP_FROM` variable.
 
-As a convenience, setting `SET_REAL_IP_FROM_CLOUDFLARE` to `yes` will cause Cloudflare's reverse proxy source IP addresses to be appended to the provided `SET_REAL_IP_FROM` list.  
+As a convenience, setting `SET_REAL_IP_FROM_CLOUDFLARE` to `yes` will cause Cloudflare's reverse proxy source IP addresses to be appended to the provided `SET_REAL_IP_FROM` list.
 
 ## Optional: Adjust request size limits & buffer size
 
 The `NGINX_CLIENT_MAX_BODY_SIZE` and `NGINX_CLIENT_BODY_BUFFER_SIZE` variables can be used to set nginx's `client_max_body_size` and `client_body_buffer_size` directives. This is most commonly required when users are uploading files to the proxied service.
 
-E.g. With `NGINX_CLIENT_MAX_BODY_SIZE` set to `100m`, nginx will allow a maximum body size of 100 megabytes. When requests are larger than `client_body_buffer_size`, nginx buffers the request using a temporary file. A larger `client_body_buffer_size` will use more memory, but will also reduce disk I/O. In many scenarios, a larger buffer size will result in increased performance. Different tradeoffs will be appropriate for different environments and use cases. 
+E.g. With `NGINX_CLIENT_MAX_BODY_SIZE` set to `100m`, nginx will allow a maximum body size of 100 megabytes. When requests are larger than `client_body_buffer_size`, nginx buffers the request using a temporary file. A larger `client_body_buffer_size` will use more memory, but will also reduce disk I/O. In many scenarios, a larger buffer size will result in increased performance. Different tradeoffs will be appropriate for different environments and use cases.
 
 ## Optional: Add Arbitrary Nginx Config
 
@@ -78,7 +82,7 @@ The `/etc/nginx/main_location.conf` file provides a place to add arbitrary Nginx
 ## Certificate Data
 
 A `/etc/letsencrypt` volume is used to maintain certificate data. An `account_key.json` file holds the key to your Let's Encrypt account - which provides a convenient way to revoke a certificate.
- 
+
 ## Customizing
 
 Nginx configuration can be customized by editing [proxy.conf](https://github.com/DanielDent/docker-nginx-ssl-proxy/blob/master/proxy.conf) and placing a new copy of it at `/etc/nginx/conf.d/default.conf`.
@@ -94,21 +98,21 @@ Reasonable defaults have been chosen for SSL cipher suites using [Mozilla's Reco
 
 ## Security Headers
 
-Reasonable defaults have been chosen with an eye towards a configuration which is more secure by default. See https://www.owasp.org/index.php/List_of_useful_HTTP_headers for more information on the headers used. These headers can be disabled by setting the `SECURITY_HEADERS` variable to `skip`. If your upstream server is itself sending these headers, setting the `SECURITY_HEADERS` variable will avoid the presence of multiple instances of these headers in responses.
+Reasonable defaults have been chosen with an eye towards a configuration which is more secure by default. See [List of useful HTTP headers](https://www.owasp.org/index.php/List_of_useful_HTTP_headers) for more information on the headers used. These headers can be disabled by setting the `SECURITY_HEADERS` variable to `skip`. If your upstream server is itself sending these headers, setting the `SECURITY_HEADERS` variable will avoid the presence of multiple instances of these headers in responses.
 
 ## Dependencies
 
-   * [nginx](https://hub.docker.com/_/nginx/) - proxy server
-   * [certbot](https://certbot.eff.org/) - for handling certificate creation & validation (+ some wrappers in this image)
-   * [envplate](https://github.com/kreuzwerker/envplate) - for allowing use of environment variables in Nginx configuration
-   * [s6-overlay](https://github.com/just-containers/s6-overlay) - for PID 1, process supervision, zombie reaping
+* [nginx](https://hub.docker.com/_/nginx/) - proxy server
+* [certbot](https://certbot.eff.org/) - for handling certificate creation & validation (+ some wrappers in this image)
+* [envplate](https://github.com/kreuzwerker/envplate) - for allowing use of environment variables in Nginx configuration
+* [s6-overlay](https://github.com/just-containers/s6-overlay) - for PID 1, process supervision, zombie reaping
 
-# Issues, Contributing
+## Issues, Contributing
 
 If you run into any problems with this image, please check for issues on [GitHub](https://github.com/DanielDent/docker-nginx-ssl-proxy/issues).
 Please file a pull request or create a new issue for problems or potential improvements.
 
-# License
+## License
 
 Copyright 2015-2018 [Daniel Dent](https://www.danieldent.com/).
 
