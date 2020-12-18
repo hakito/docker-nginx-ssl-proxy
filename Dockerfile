@@ -4,7 +4,9 @@ LABEL maintainer="Hakito (https://github.com/hakito)"
 ENV S6_OVERLAY_VERSION  2.1.0.2
 
 ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-amd64-installer /tmp/
-RUN chmod +x /tmp/s6-overlay-amd64-installer && /tmp/s6-overlay-amd64-installer /
+RUN chmod +x /tmp/s6-overlay-amd64-installer \
+    && /tmp/s6-overlay-amd64-installer / \
+    && rm -r /tmp/s6-overlay-amd64-installer
 
 ENV ENVPLATE_SHA256 8366c3c480379dc325dea725aac86212c5f5d1bf55f5a9ef8e92375f42d55a41
 ENV CLOUDFLARE_V4_SHA256 0248f5d00559a9caed08c3fad66f25f8570375c256ca3aa918dcba3378a8953c
