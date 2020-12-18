@@ -1,4 +1,4 @@
-#!/usr/bin/with-contenv bash
+#!/usr/bin/with-contenv ash
 
 if [ -z "$SERVERNAME" ]; then
     echo "ERROR: Server name must be specified..."
