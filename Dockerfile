@@ -1,4 +1,4 @@
-FROM hakito/nginx-digest
+FROM hakito/nginx-digest:stable
 LABEL maintainer="Hakito (https://github.com/hakito)"
 
 ENV S6_OVERLAY_VERSION  2.1.0.2
