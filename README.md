@@ -1,6 +1,6 @@
 # SSL Front-End Proxy With Automatic Free Certificate Management And Digest Authentication
 
-This image is base on [danieldent/nginx-ssl-proxy](https://hub.docker.com/r/danieldent/nginx-ssl-proxy) but provides
+This image is based on [danieldent/nginx-ssl-proxy](https://hub.docker.com/r/danieldent/nginx-ssl-proxy) but provides
 digest authtentication instead of basic authentication.
 
 Zero configuration required - set up SSL in 30 seconds. Out of the box A rating at SSL labs. HTTP/2 enabled for increased performance.
