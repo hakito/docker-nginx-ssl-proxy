@@ -12,7 +12,7 @@ ENV ENVPLATE_SHA256 8366c3c480379dc325dea725aac86212c5f5d1bf55f5a9ef8e92375f42d5
 ENV CLOUDFLARE_V4_SHA256 0248f5d00559a9caed08c3fad66f25f8570375c256ca3aa918dcba3378a8953c
 ENV CLOUDFLARE_V6_SHA256 559b5c5a20088758b4643621ae80be0a71567742ae1fe8e4ff32d1ca26297f8f
 
-RUN apk --update add --no-cache pwgen curl \
+RUN apk --update add --no-cache pwgen curl certbot \
     && echo "---> INSTALLING envplate" \
     && wget https://github.com/kreuzwerker/envplate/releases/download/v0.0.8/ep-linux \
     && echo "$ENVPLATE_SHA256  ep-linux" | sha256sum -c \
