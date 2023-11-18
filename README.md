@@ -5,8 +5,6 @@ digest authtentication instead of basic authentication.
 
 Zero configuration required - set up SSL in 30 seconds. Out of the box A rating at SSL labs. HTTP/2 enabled for increased performance.
 
-This image contains nginx along with some glue code to automatically obtain and renew a free DV SSL certificate from [Let's Encrypt](https://letsencrypt.org/).
-
 It is configured by setting two environment variables:
 
 * `UPSTREAM` - The IP address or hostname (and optional port) of the upstream server to proxy requests towards.
@@ -16,7 +14,7 @@ An optional `EXTRANAMES` variable can be provided with a list of additional doma
 
 Certificates from Let's Encrypt are issued with a 90 day expiration. This image will automatically renew the certificate when it is 60 days old.
 
-Prior versions of this image used simp_le. It has been changed to use certbot due to reliability issues with simp_le.
+Prior versions of this image used simp_le. It has been changed to use external acme due to reliability issues with simp_le.
 
 ## WARNING - HSTS Strict-Transport-Security Header
 
@@ -39,7 +37,7 @@ Create a docker-compose.yml file as follows:
         - "80:80"
         - "443:443"
       volumes:
-        - "/etc/letsencrypt"
+        - "/certs"
 
 Then simply `docker-compose up`.
 
@@ -81,7 +79,7 @@ The `/etc/nginx/main_location.conf` file provides a place to add arbitrary Nginx
 
 ## Certificate Data
 
-A `/etc/letsencrypt` volume is used to maintain certificate data. An `account_key.json` file holds the key to your Let's Encrypt account - which provides a convenient way to revoke a certificate.
+A `/certs` volume is used to maintain certificate data. It must be generated externally with acme.sh.
 
 ## Customizing
 
@@ -103,7 +101,6 @@ Reasonable defaults have been chosen with an eye towards a configuration which i
 ## Dependencies
 
 * [nginx](https://hub.docker.com/_/nginx/) - proxy server
-* [certbot](https://certbot.eff.org/) - for handling certificate creation & validation (+ some wrappers in this image)
 * [envplate](https://github.com/kreuzwerker/envplate) - for allowing use of environment variables in Nginx configuration
 * [s6-overlay](https://github.com/just-containers/s6-overlay) - for PID 1, process supervision, zombie reaping
 
